@@ -9,7 +9,7 @@
 #include "barcode.h"
 #include "boxconfig.h"
 
-#define SCANNER_DEV "/dev/input/event2"
+#define SCANNER_DEV "/dev/input/event4"
 
 int fd; 
 int read_nu;
