@@ -11,14 +11,14 @@
 
 #define SCANNER_DEV "/dev/input/event4"
 
-int fd; 
+int fd;
 int read_nu;
 char trans(unsigned short data);
 bool shiftswitch=false;
 
 int main(int argc, char *argv[])
 {
-    struct input_event buff; 
+    struct input_event buff;
     barcode* bc = new barcode;
     char a[4096] = {};
 
@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
         fd = open(SCANNER_DEV, O_RDONLY);//打开usb扫描枪设备
         if (fd < 0)
         { 
-                perror("can not open device usbscanner!"); 
+                perror("can not open device usbscanner!");
                 close(fd);
                 sleep(1);
         }else
@@ -35,55 +35,54 @@ int main(int argc, char *argv[])
             break;
         }
     }
-        fd = open(SCANNER_DEV, O_RDONLY);//打开usb扫描枪设备
-        int i = 0;
-        printf("--fd:%d--\n",fd);
-        int res = 0;
-        while(1)
-        {
+    int i = 0;
+    printf("--fd:%d--\n",fd);
+    int res = 0;
+    while(1)
+    {
 //                memset(&buff, 0, sizeof(buff));
-                while(res == 0)
-                {
-                    res = read(fd,&buff,sizeof(struct input_event));
-                }
-                if(res < 0)
-                {
-                    printf("broken barcode, waiting 1s\n");
-                    close(fd); sleep(1);
-                    fd = open(SCANNER_DEV, O_RDONLY);//打开usb扫描枪设备
-                    res = 0;
-                    continue;
-                }
-//if(buff.type != 4) printf("type is %d\n", buff.type);
-                printf("res is %d\n", res);
-                printf("type:%d code:%d value:%d\n",buff.type,buff.code,buff.value); 
-                res = 0; //reset res
-                if(buff.type != 1) continue;
-//handle case sensitive
-                if(buff.code == 42)//shift
-                {
-                    if(buff.value==1){shiftswitch=true;}
-                    else if(buff.value==0){shiftswitch=false;}
-                    continue;
-                }
-//handle case sensitive
-                if(buff.code != 28 && buff.value == 1)//CRLF=28
-                {
-                    a[i] = trans(buff.code);
-                    if('?'==a[i]) continue;
-                    i++;
-                    printf("----- %c %d-------\n", a[i-1],buff.code);
-                }
-                else if(buff.code==28 && buff.value == 1)
-                {
-                    printf("========= str is %s ========\n", a);
-                    bc -> onGetStr(a);
-                    i=0;
-                    memset(a, 0, 4096);
-                }
+        while(res == 0)
+        {
+            res = read(fd,&buff,sizeof(struct input_event));
         }
-        close(fd); 
-        return 1;
+        if(res < 0)
+        {
+            printf("broken barcode, waiting 1s\n");
+            close(fd); sleep(1);
+            fd = open(SCANNER_DEV, O_RDONLY);//打开usb扫描枪设备
+            res = 0;
+            continue;
+        }
+//if(buff.type != 4) printf("type is %d\n", buff.type);
+        printf("res is %d\n", res);
+        printf("type:%d code:%d value:%d\n",buff.type,buff.code,buff.value); 
+        res = 0; //reset res
+        if(buff.type != 1) continue;
+//handle case sensitive
+        if(buff.code == 42)//shift
+        {
+            if(buff.value==1){shiftswitch=true;}
+            else if(buff.value==0){shiftswitch=false;}
+            continue;
+        }
+//handle case sensitive
+        if(buff.code != 28 && buff.value == 1)//CRLF=28
+        {
+            a[i] = trans(buff.code);
+            if('?'==a[i]) continue;
+            i++;
+            printf("----- %c %d-------\n", a[i-1],buff.code);
+        }
+        else if(buff.code==28 && buff.value == 1)
+        {
+            printf("========= str is %s ========\n", a);
+            bc -> onGetStr(a);
+            i=0;
+            memset(a, 0, 4096);
+        }
+    }
+    close(fd);
+    return 1;
 }
 
 char trans(unsigned short data)

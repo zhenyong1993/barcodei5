@@ -30,10 +30,10 @@ void barcode::onGetStr(const string& str)
     string packet = generatePacket(preStr);
     if(packet.empty())
     {
-		cout << "empty" << endl;
-		return;
+        cout << "empty" << endl;
+        return;
     }
-	cout << "confirmed, content is " << preStr << endl;
+    cout << "confirmed, content is " << preStr << endl;
     cout << "json is " << packet << endl;
     mqClient::getInstance().publish("remoteGroup", packet);
 }
@@ -42,10 +42,10 @@ string barcode::generatePacket(const string& id)
 {
     string cfgFile = "/home/isesol/config/common/common.properties";
     Config cfg;
-	if (cfg.FileExist(cfgFile))
-	{
-		cfg.ReadFile(cfgFile);
-	}
+    if (cfg.FileExist(cfgFile))
+    {
+        cfg.ReadFile(cfgFile);
+    }
     else
     {
         cout  << "read  file fail " << endl;
@@ -71,7 +71,8 @@ string barcode::generatePacket(const string& id)
         cout << "no match " << endl;
         return "";
     }
-    for(int i=0;i<6 && matchptr[i].rm_so!=-1;i++){
+    for(int i=0;i<6 && matchptr[i].rm_so!=-1;i++)
+    {
         int len = matchptr[i].rm_eo-matchptr[i].rm_so;
         cout << "rm_so: " << matchptr[i].rm_so << " rm_eo: " << matchptr[i].rm_eo << endl;
         if(len){
@@ -142,38 +143,38 @@ void barcode::subscribeFail()
 }
 string barcode::getuuid()
 {
-        char buf[37];
-        const char *c = "89ab";
-        char *p = buf;
-        int n;
-        srand((unsigned)time(NULL));
-        for( n = 0; n < 16; ++n )
+    char buf[37];
+    const char *c = "89ab";
+    char *p = buf;
+    int n;
+    srand((unsigned)time(NULL));
+    for( n = 0; n < 16; ++n )
+    {
+        int b = rand()%255;
+        switch( n )
         {
-                int b = rand()%255;
-                switch( n )
-                {
-                        case 6:
-                                sprintf(p, "4%x", b%15 );
-                                break;
-                        case 8:
-                                sprintf(p, "%c%x", c[rand()%strlen(c)], b%15 );
-                                break;
-                        default:
-                                sprintf(p, "%02x", b);
-                                break;
-                }
-
-                p += 2;
-                switch( n )
-                {
-                        case 3:
-                        case 5:
-                        case 7:
-                        case 9:
-                                *p++ = '-';
-                                break;
-                }
+            case 6:
+                sprintf(p, "4%x", b%15 );
+                break;
+            case 8:
+                sprintf(p, "%c%x", c[rand()%strlen(c)], b%15 );
+                break;
+            default:
+                sprintf(p, "%02x", b);
+                break;
         }
-        *p = 0;
-        return buf;
+
+        p += 2;
+        switch( n )
+        {
+            case 3:
+            case 5:
+            case 7:
+            case 9:
+            *p++ = '-';
+            break;
+        }
+    }
+    *p = 0;
+    return buf;
 }
