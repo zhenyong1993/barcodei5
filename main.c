@@ -9,12 +9,33 @@
 #include "barcode.h"
 #include "boxconfig.h"
 
-#define SCANNER_DEV "/dev/input/event4"
+#define SCANNER_DEV "/dev/input/event11"
 
 int fd;
 int read_nu;
 char trans(unsigned short data);
 bool shiftswitch=false;
+
+int getBarcodeIndex()
+{
+    char          name[64];           /* RATS: Use ok, but could be better */
+    char          buf[256] = { 0, };  /* RATS: Use ok */
+    int           fd = 0;
+    int           i;
+    for (i = 0; i < 32; i++)
+    {
+        sprintf(name, "/dev/input/event%d", i);
+        if ((fd = open(name, O_RDONLY, 0)) >= 0)
+        {
+            ioctl(fd, EVIOCGNAME(sizeof(buf)), buf);
+            printf("/dev/input/event%d :name: %s\n", i, buf);
+            close(fd);
+            if(strstr(buf,"HID") != NULL) return i;
+        }
+    }
+        return -1;
+
+}
 
 int main(int argc, char *argv[])
 {
@@ -22,9 +43,26 @@ int main(int argc, char *argv[])
     barcode* bc = new barcode;
     char a[4096] = {};
 
+    int i=-1;
+    char name[32];
     while(1)
     {
-        fd = open(SCANNER_DEV, O_RDONLY);//打开usb扫描枪设备
+        i=getBarcodeIndex();
+        if(-1 != i)
+        {
+            printf("HID found at index %d\n",i);
+            sprintf(name, "/dev/input/event%d", i);
+            break;
+        }else
+        {
+            sleep(1);
+            printf("HID not found, waiting 1s\n");
+        }
+    }
+
+    while(1)
+    {
+        fd = open(name, O_RDONLY);//打开usb扫描枪设备
         if (fd < 0)
         { 
                 perror("can not open device usbscanner!");
@@ -35,7 +73,7 @@ int main(int argc, char *argv[])
             break;
         }
     }
-    int i = 0;
+    i = 0;
     printf("--fd:%d--\n",fd);
     int res = 0;
     while(1)
@@ -49,7 +87,7 @@ int main(int argc, char *argv[])
         {
             printf("broken barcode, waiting 1s\n");
             close(fd); sleep(1);
-            fd = open(SCANNER_DEV, O_RDONLY);//打开usb扫描枪设备
+            fd = open(name, O_RDONLY);//打开usb扫描枪设备
             res = 0;
             continue;
         }

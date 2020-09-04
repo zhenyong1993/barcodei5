@@ -14,7 +14,7 @@ else
 echo "uuid installed"
 fi
 
-APPHEAD=/home/isesol/nut/app/barcode
+APPHEAD=/home/isesol/nut/app/toolapply
 APPBIN=$APPHEAD/bin
 APPCONFIG=$APPHEAD/config
 APPDATA=$APPHEAD/data
